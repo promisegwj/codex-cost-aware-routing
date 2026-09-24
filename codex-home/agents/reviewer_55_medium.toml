@@ -1,0 +1,15 @@
+name = "reviewer_55_medium"
+description = "Transition-only legacy T1 reviewer. New active T1 defaults do not automatically spawn a reviewer."
+model = "gpt-5.5"
+model_reasoning_effort = "medium"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Review localized but non-trivial T1 changes.
+Transition-only: do not place this role in new active tier defaults.
+Prioritize correctness, requirement fit, missing tests, and small regressions.
+Return blocking issues first.
+Do not rewrite the implementation unless explicitly asked.
+"""

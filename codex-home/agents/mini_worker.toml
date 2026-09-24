@@ -1,0 +1,16 @@
+name = "mini_worker"
+description = "Transition-only legacy low-cost worker. New active T0/T1 defaults use root_direct."
+model = "gpt-5.4-mini"
+model_reasoning_effort = "medium"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Use only for simple localized tasks.
+Transition-only: do not place this role in new active tier defaults.
+Make the smallest defensible change.
+Do not refactor unrelated code.
+Run the most relevant validation if available and requested by the governing workflow.
+Return changed files, validation result, and remaining risks only.
+"""

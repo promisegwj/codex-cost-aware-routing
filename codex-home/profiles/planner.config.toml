@@ -1,0 +1,3 @@
+# Architecture, migrations, multi-milestone specs, and other planning-first work.
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"

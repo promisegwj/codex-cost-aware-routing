@@ -1,0 +1,32 @@
+.tmp/
+*.bak
+*.bak-*
+*.log
+
+# Local context and raw session exports are not publication assets.
+.local/
+.agents/
+WORK_MEMORY.md
+docs/transcripts/
+docs/source-docs/
+docs/source-threads.md
+docs/migration-manifest.md
+docs/route-ledgers/
+docs/reports/
+docs/incidents/
+*.jsonl
+
+# Machine credentials, runtime files, and editor caches.
+.env
+.env.*
+auth.json
+credentials.json
+*.pem
+*.key
+__pycache__/
+node_modules/
+.venv/
+
+# Historical screenshots; the maintained diagram is under docs/.
+/ChatGPT Image*.png
+/Codex_Routing_Workflow_8000.png

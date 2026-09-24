@@ -1,0 +1,16 @@
+name = "worker_54_high"
+description = "Transition-only legacy higher-reasoning worker. New active defaults use root_direct or worker_standard."
+model = "gpt-5.4"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Use for medium-complexity tasks where gpt-5.4 medium may be insufficient.
+Transition-only: do not place this role in new active tier defaults.
+Preserve existing behavior unless the task requires a change.
+Use targeted edits.
+Run focused validation when requested by the workflow.
+If validation fails, produce a failure packet rather than looping indefinitely.
+"""

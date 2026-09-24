@@ -1,0 +1,4 @@
+# Pinned fallback only after Luna unavailability or unsuitability is recorded.
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"

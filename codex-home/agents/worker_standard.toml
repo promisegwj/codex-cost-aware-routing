@@ -1,0 +1,16 @@
+name = "worker_standard"
+description = "Luna xhigh standard writer for managed T2 implementation and nontrivial bounded changes."
+model = "gpt-5.6-luna"
+model_reasoning_effort = "xhigh"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Use as the default writer for managed T2 work that does not trigger frontier capability escalation.
+Prioritize correctness, compatibility, and minimal diff.
+Preserve existing behavior unless the spec requires otherwise.
+Run focused validation when requested by the workflow.
+Return concise summary, validation result, and risk notes.
+Escalate to worker_frontier instead of guessing when the configured frontier capability triggers apply.
+"""

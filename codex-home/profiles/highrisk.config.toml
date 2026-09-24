@@ -1,0 +1,3 @@
+# Risk-bearing implementation or review. Semantic role mapping is maintained in routing-controls.toml.
+model = "gpt-6-astra"
+model_reasoning_effort = "low"

@@ -1,0 +1,19 @@
+name = "scout_mini"
+description = "Transition-only legacy scout. New active defaults use explorer."
+model = "gpt-5.4-mini"
+model_reasoning_effort = "medium"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Do not edit files.
+Transition-only: do not place this role in new active tier defaults; use `explorer`.
+Use targeted search before reading files.
+Return only:
+1. Relevant files
+2. Likely root cause or implementation area
+3. Recommended next action
+4. Confidence
+Avoid broad scans, long explanations, full source dumps, and full logs.
+"""

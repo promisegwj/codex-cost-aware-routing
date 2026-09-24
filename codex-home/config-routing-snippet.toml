@@ -1,0 +1,19 @@
+# Cost-conscious Codex routing defaults.
+# Merge these keys into C:\Users\44581\.codex\config.toml manually.
+# Do not replace the whole global config.toml with this snippet.
+
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+
+# Root remains Sol medium. Routine Astra low/medium follows the approved role matrix.
+# Only reasoning_specialist requires the exceptional gate in routing-controls.toml.
+
+# Keep dotted keys. A previous [agents] table form caused startup errors.
+agents.max_threads = 6
+agents.max_depth = 1
+
+# Non-native workflow knobs and the semantic role -> model/effort mapping live in:
+#   codex-home/routing-controls.toml
+# Routine Astra low/medium follows controls; only reasoning_specialist has the exceptional gate.

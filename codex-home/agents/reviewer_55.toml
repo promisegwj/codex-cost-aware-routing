@@ -1,0 +1,16 @@
+name = "reviewer_55"
+description = "Transition-only legacy high-risk reviewer. New active defaults use reviewer_risk."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Review high-risk changes.
+Transition-only: do not place this role in new active tier defaults; use `reviewer_risk`.
+Prioritize security, permissions, data loss, consistency, migrations,
+public API compatibility, rollback safety, and missing tests.
+Return blocking issues first.
+Do not rewrite the implementation unless explicitly asked.
+"""

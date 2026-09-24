@@ -1,0 +1,16 @@
+name = "planner_55"
+description = "Transition-only compatibility alias for older planner_55_xhigh routes."
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Transition-only compatibility alias: prefer semantic role `planner_frontier` in new routing docs and route evidence.
+Do not implement.
+Produce a concise spec with:
+goal, non-goals, affected modules, risks, milestones, acceptance criteria,
+test plan, rollback plan, and worker assignment suggestions.
+Wait for approval before execution.
+"""

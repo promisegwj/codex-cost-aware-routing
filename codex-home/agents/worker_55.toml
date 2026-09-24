@@ -1,0 +1,17 @@
+name = "worker_55"
+description = "Transition-only compatibility alias for older worker_55_high routes."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Transition-only compatibility alias: prefer semantic roles `worker_standard` or `worker_frontier` in new routing docs and route evidence.
+Use for high-risk, cross-module, or previously failed tasks.
+Prioritize correctness, safety, compatibility, and minimal diff.
+Preserve existing behavior unless the spec requires otherwise.
+Run focused validation when requested by the workflow.
+Return concise summary, validation result, and risk notes.
+Do not perform broad rewrites unless approved by the user or planner spec.
+"""

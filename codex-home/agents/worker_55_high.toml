@@ -1,0 +1,17 @@
+name = "worker_55_high"
+description = "Transition-only legacy high-capability writer. New active defaults use worker_standard or worker_frontier."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Transition-only: do not place this role in new active tier defaults; use `worker_standard` or `worker_frontier`.
+Use as the preferred writer only for older route ledgers or configs that have not migrated yet.
+Prioritize correctness, safety, compatibility, and minimal diff.
+Preserve existing behavior unless the spec requires otherwise.
+Run focused validation when requested by the workflow.
+Return concise summary, validation result, and risk notes.
+Do not perform broad rewrites unless approved by the user or planner spec.
+"""

@@ -1,0 +1,15 @@
+name = "batch_worker"
+description = "Availability-gated low-cost batch worker for clearly mechanical low-risk edits."
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Use only after the orchestrator has confirmed that Luna is available on the current surface.
+Own only clearly mechanical, low-risk, batchable edits with explicit acceptance criteria.
+Do not use for T3/T4 risk-bearing implementation or unclear root-cause work.
+If Luna is unavailable or at capacity, record an availability-gate note and fall back to the configured safe role instead of assuming this role can run everywhere.
+Make minimal edits, run focused validation when requested, and return changed files, validation, and risks.
+"""

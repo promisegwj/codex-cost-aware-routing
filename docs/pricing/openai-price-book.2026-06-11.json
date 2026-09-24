@@ -1,0 +1,107 @@
+{
+  "as_of": "2026-06-11",
+  "default_price_book": "standard_short_context",
+  "credit_policy": {
+    "name": "image_reference_v1",
+    "credits_per_usd": 25,
+    "rationale": "Matches the pricing table in ChatGPT Image 2026年6月11日 02_02_33.png, where credits equal 25x the standard short-context USD price."
+  },
+  "sources": {
+    "official_pricing_page": {
+      "url": "https://openai.com/api/pricing/",
+      "lines": "33-76",
+      "notes": "Official standard pricing for GPT-5.5, GPT-5.4, and GPT-5.4 mini under 270K context."
+    },
+    "developer_pricing_matrix": {
+      "url": "https://developers.openai.com/api/docs/pricing",
+      "lines": "709-753",
+      "notes": "Detailed standard, flex, priority, and long-context prices."
+    },
+    "workflow_image": {
+      "file": "E:/CodexWorkSpace/根据任务难度路由大模型/ChatGPT Image 2026年6月11日 02_02_33.png",
+      "notes": "The image credit table aligns with standard short-context USD pricing multiplied by 25."
+    }
+  },
+  "price_books": {
+    "standard_short_context": {
+      "label": "Official standard pricing under 270K context",
+      "models": {
+        "gpt-5.5": {
+          "input": 5.0,
+          "cached_input": 0.5,
+          "output": 30.0
+        },
+        "gpt-5.4": {
+          "input": 2.5,
+          "cached_input": 0.25,
+          "output": 15.0
+        },
+        "gpt-5.4-mini": {
+          "input": 0.75,
+          "cached_input": 0.075,
+          "output": 4.5
+        }
+      }
+    },
+    "standard_long_context": {
+      "label": "Official standard pricing above short-context threshold",
+      "models": {
+        "gpt-5.5": {
+          "input": 10.0,
+          "cached_input": 1.0,
+          "output": 45.0
+        },
+        "gpt-5.4": {
+          "input": 5.0,
+          "cached_input": 0.5,
+          "output": 22.5
+        },
+        "gpt-5.4-mini": {
+          "input": 0.75,
+          "cached_input": 0.075,
+          "output": 4.5
+        }
+      }
+    },
+    "flex_short_context": {
+      "label": "Official flex pricing under short-context threshold",
+      "models": {
+        "gpt-5.5": {
+          "input": 2.5,
+          "cached_input": 0.25,
+          "output": 15.0
+        },
+        "gpt-5.4": {
+          "input": 1.25,
+          "cached_input": 0.13,
+          "output": 7.5
+        },
+        "gpt-5.4-mini": {
+          "input": 0.375,
+          "cached_input": 0.0375,
+          "output": 2.25
+        }
+      }
+    },
+    "priority_short_context": {
+      "label": "Official priority pricing under short-context threshold",
+      "models": {
+        "gpt-5.5": {
+          "input": 12.5,
+          "cached_input": 1.25,
+          "output": 75.0
+        },
+        "gpt-5.4": {
+          "input": 5.0,
+          "cached_input": 0.5,
+          "output": 30.0
+        },
+        "gpt-5.4-mini": {
+          "input": 1.5,
+          "cached_input": 0.15,
+          "output": 9.0
+        }
+      }
+    }
+  }
+}

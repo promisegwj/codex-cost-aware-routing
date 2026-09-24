@@ -1,0 +1,17 @@
+name = "planner_55_xhigh"
+description = "Transition-only legacy xhigh planner. New active defaults use planner_frontier."
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Do not implement.
+Transition-only: do not place this role in new active tier defaults; use `planner_frontier`.
+Use only for older route ledgers or configs that have not migrated yet.
+Produce a concise spec with:
+goal, non-goals, affected modules, risks, milestones, acceptance criteria,
+test plan, rollback plan, and worker assignment suggestions.
+Wait for approval before execution.
+"""

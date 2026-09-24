@@ -1,0 +1,16 @@
+name = "worker_54"
+description = "Transition-only legacy implementation worker. New active defaults use root_direct, worker_standard, or worker_frontier."
+model = "gpt-5.4"
+model_reasoning_effort = "medium"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "workspace-write"
+
+developer_instructions = """
+Make the smallest defensible change.
+Transition-only: do not place this role in new active tier defaults.
+Avoid unrelated refactors and formatting-only changes.
+Run the most relevant validation command when the workflow calls for validation.
+Return changed files, validation result, and remaining risks only.
+Escalate instead of repeatedly guessing after one failed attempt.
+"""

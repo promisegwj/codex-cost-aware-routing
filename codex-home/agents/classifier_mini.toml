@@ -1,0 +1,17 @@
+name = "classifier_mini"
+description = "Transition-only legacy classifier. New active defaults use deterministic routing plus semantic GPT-5.6 roles."
+model = "gpt-5.4-mini"
+model_reasoning_effort = "low"
+model_verbosity = "low"
+model_reasoning_summary = "concise"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Do not edit files.
+Do not solve the task.
+Transition-only: do not place this role in new active tier defaults.
+Use deterministic risk cues first and only read the minimum context needed.
+Return compact JSON only with:
+task_type, risk_score, tier, path, need_scout, need_planner, reviewer, max_worker_attempts, escalation, reason.
+Keep the answer under 220 tokens.
+"""

@@ -1,0 +1,277 @@
+# Project-owned routing controls for codex-workflow.
+# This file is descriptive policy for the workflow and agent templates.
+# Do not merge these custom keys into global Codex config.toml.
+
+[routing]
+max_scouts = 1
+max_worker_attempts = 1
+max_rework_passes = 1
+max_review_rounds = 1
+output_style = "concise"
+prefer_static_preroute = true
+require_failure_packet_after_failed_attempt = true
+enforcement_mode = "hard_for_T3_T4_managed_for_T2"
+require_route_evidence = true
+require_route_ledger = true
+require_all_child_contexts_in_evidence = true
+require_execution_context_discovery = true
+require_reuse_gate_before_spawn = true
+require_evidence_source = true
+require_substitution_packet = true
+goal_mode_is_route_evidence = false
+preauthorize_hard_routing = true
+allow_main_agent_role_collapse = false
+allow_degraded_manual_route = false
+allow_main_agent_write_substitution = "failed_or_blocked_or_timeout_or_abandoned_or_closed_with_unusable_output_or_user_degraded_execution"
+fallback_if_no_execution_context = "route_blocked"
+managed_route_tiers = ["T2"]
+hard_route_tiers = ["T3", "T4"]
+strategy = "completion_first_with_cost_guardrails"
+hard_route_evidence_required_fields = ["child_id", "parent_id_if_visible", "thread_source", "evidence_source", "agent_role", "status", "adoption_reason"]
+compact_route_evidence_required_fields = ["route_decision", "spawned_children_if_any", "model_effort_source", "validation_result", "frontier_escalation_decision", "specialist_gate_decision"]
+model_effort_role_config_label = "routing-controls model_roles mapping"
+goal_mode_note = "Goal mode and Goal-mode are continuation or handoff wrappers, not route evidence."
+t2_t3_default_child_budget = 3
+
+[root_default]
+role = "root_direct"
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+reason = "frontier default for root continuity without globally forcing xhigh"
+
+[model_roles.batch_worker]
+model = "gpt-5.6-luna"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+availability_gate = true
+fallback_role = "worker_standard"
+notes = "Use only for clearly batchable low-risk mechanical work after confirming Luna is exposed on the current surface."
+
+[model_roles.explorer]
+model = "gpt-5.6-luna"
+model_reasoning_effort = "high"
+sandbox_mode = "read-only"
+notes = "Read-only discovery role; replaces scout_mini in active defaults."
+availability_gate = true
+fallback_profile = "explorer-terra-fallback"
+
+[model_roles.worker_standard]
+model = "gpt-5.6-luna"
+model_reasoning_effort = "xhigh"
+sandbox_mode = "workspace-write"
+notes = "Default T2 managed implementation worker. Luna/xhigh was selected to reduce rework while using Astra low for clear capability escalation triggers."
+availability_gate = true
+fallback_profile = "worker-terra-fallback"
+
+[model_roles.worker_frontier]
+model = "gpt-6-astra"
+model_reasoning_effort = "low"
+sandbox_mode = "workspace-write"
+notes = "Use for deterministic T2 escalation, T3 implementation, and default T4 milestone execution."
+
+[model_roles.reviewer_risk]
+model = "gpt-6-astra"
+model_reasoning_effort = "low"
+sandbox_mode = "read-only"
+notes = "Risk review for T2 escalation, T3, and T4 milestones."
+
+[model_roles.planner_frontier]
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+notes = "T4 architecture, migration, and multi-milestone planning."
+
+[model_roles.reviewer_final]
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+notes = "Final T4 cross-milestone review."
+
+[model_roles.reasoning_specialist]
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+availability_gate = true
+automatic_tier_route = false
+notes = "Exceptional bounded reasoning or planning specialist only after the GPT-6 gate passes. The existing writer implements its result."
+
+[preferred_roles]
+t0_worker = "root_direct"
+t1_worker = "root_direct"
+t1_reviewer = "none_by_default"
+t2_explorer = "explorer"
+t2_worker = "worker_standard"
+t2_frontier_worker = "worker_frontier"
+t2_reviewer = "reviewer_risk"
+t3_explorer = "explorer"
+t3_worker = "worker_frontier"
+t3_reviewer = "reviewer_risk"
+t4_planner = "planner_frontier"
+t4_worker = "worker_frontier"
+t4_milestone_reviewer = "reviewer_risk"
+t4_final_reviewer = "reviewer_final"
+batch_worker = "batch_worker"
+exceptional_reasoning_specialist = "reasoning_specialist"
+legacy_worker_55_alias = "worker_55"
+legacy_planner_55_alias = "planner_55"
+
+[tier_defaults]
+T0 = "root_direct -> focused validation -> return"
+T1 = "root_direct -> focused validation -> return; no automatic child spawn"
+T2 = "managed conditional: root_direct decision -> optional explorer -> worker_standard -> validation -> optional reviewer_risk; escalate to worker_frontier on deterministic frontier capability triggers"
+T3 = "explicit hard route: explorer -> worker_frontier -> validation -> reviewer_risk"
+T4 = "explicit hard route: planner_frontier -> spec approval -> staged worker_frontier execution -> reviewer_risk -> reviewer_final"
+
+[t2_policy]
+managed_conditional = true
+require_compact_evidence = true
+default_worker = "worker_standard"
+frontier_escalation_worker = "worker_frontier"
+frontier_escalation_effort = "low"
+reviewer_when_escalated = "reviewer_risk"
+frontier_escalation_triggers = [
+  "security_auth_permissions_payments_privacy_or_encryption",
+  "data_loss_data_consistency_or_migration_risk",
+  "public_api_schema_contract_or_backward_compatibility_risk",
+  "failed_or_blocked_lower_tier_attempt_with_unclear_root_cause",
+  "cross_module_refactor_with_unclear_validation",
+  "user_explicitly_requests_frontier_or_high_confidence_completion",
+  "reviewer_or_validator_finds_high_severity_issue",
+]
+compact_evidence_note = "For T2, record the decision, any spawned child ids, validation result, and why frontier capability was or was not triggered; full route ledgers are still allowed."
+
+[exceptional_reasoning_policy]
+enabled = true
+role = "reasoning_specialist"
+default_model = "gpt-6-astra"
+default_reasoning_effort = "medium"
+scope = "one bounded read-only reasoning or planning subproblem"
+writer_after_specialist = "existing assigned writer"
+require_gate_evidence = true
+allowed_gate_paths = [
+  "explicit_ultra_hard_coupling_or_novel_reasoning_with_evidence_current_assigned_route_is_insufficient",
+  "failure_packet_demonstrates_assigned_route_failed_due_to_reasoning_limit_not_tool_environment_or_capacity",
+]
+automatic_non_triggers = [
+  "tier_T3_or_T4_alone",
+  "security_or_risk_alone",
+  "many_files_alone",
+  "user_requests_high_confidence_alone",
+  "model_capacity_or_availability_error",
+]
+default_invocation = "registered reasoning_specialist agent"
+unregistered_role_fallback = "after_gate_only: default child with explicit gpt-6-astra medium, bounded context, actual restriction inspection, and read-only no-file-change handoff prompt"
+fallback_read_only_enforcement_values = ["sandbox", "prompt_only"]
+prompt_only_is_hard_isolation = false
+route_blocked_if_enforced_read_only_required_but_unavailable = true
+availability_rule = "unavailable does not bypass the gate, justify another GPT-6 model, or count as a assigned-route reasoning failure"
+medium_to_high_rule = "high only after documented medium reasoning inadequacy"
+xhigh_max_ultra_rule = "explicit user request plus current runtime support only"
+implementation_rule = "specialist remains read-only; existing assigned writer implements and validates"
+evidence_required_fields = ["gate_path", "insufficiency_evidence", "bounded_subproblem", "invocation", "model_effort", "availability", "read_only_enforcement", "output_adoption"]
+
+[route_ledger]
+template_path = "codex-home/templates/route-ledger.md"
+participant_statuses = ["adopted", "superseded", "failed", "blocked", "timeout", "closed", "ignored", "review-only"]
+require_auditable_child_output_summary = true
+require_execution_context_discovery_section = true
+require_evidence_source_section = true
+require_goal_handoff_status_section = true
+require_main_session_substitution_section = true
+require_voice_sidecar_section = true
+require_reuse_gate_section = true
+require_spawn_budget_section = true
+require_exceptional_reasoning_gate_section = true
+participant_required_fields = ["id", "parent_id", "thread_source", "evidence_source", "role", "model_evidence", "status", "adopted", "reason", "reuse_checked", "scope_key", "acceptance_matrix_id", "batch_id", "spawn_reason", "reuse_or_spawn_decision", "supersedes_child_id"]
+
+[lifecycle_policy]
+require_reuse_gate_before_spawn = true
+pool_reuse_key_fields = ["parent_route_id", "role", "scope_key", "acceptance_matrix_id", "batch_id"]
+prefer_send_input_for_narrow_rework = true
+prefer_send_input_for_reviewer_closure = true
+new_spawn_requires_reason = true
+respect_user_requested_agent_count_as_cap = true
+t2_t3_default_child_budget = 3
+max_same_role_per_scope_without_expansion = 1
+require_budget_expansion_packet = true
+placeholder_or_missent_child_status = "ignored"
+placeholder_or_missent_child_reason = "pollution"
+placeholder_or_missent_counts_as_route_evidence = false
+
+[writer_policy]
+single_active_writer_per_scope = true
+require_writer_replacement_packet = true
+require_main_session_substitution_packet = true
+replacement_reasons = ["failed", "blocked", "timeout", "abandoned", "output_unavailable", "output_unusable", "closed_with_unusable_output"]
+main_session_substitution_reasons = ["blocked", "timeout", "closed_with_unusable_output"]
+main_session_substitution_required_fields = ["original_worker_id", "blocking_reason", "reusable_output", "main_session_write_scope", "validation_commands", "reviewer_closure"]
+allow_nonconflicting_parallel_while_waiting = true
+prohibit_impatient_high_worker_replacement = true
+max_parallel_high_writers_per_scope = 1
+
+[review_policy]
+require_same_reviewer_for_high_severity_rework_when_possible = true
+require_reviewer_identity_stickiness = true
+prefer_send_input_for_reviewer_closure = true
+new_reviewer_requires_reason = true
+max_reviewers_per_acceptance_matrix_without_expansion = 1
+allow_single_narrow_rework_pass = true
+require_closure_note_when_reviewer_cannot_rerun = true
+escalate_after_expanded_rework = true
+
+[explorer_policy]
+max_explorers_default = 4
+respect_user_requested_agent_count_as_cap = true
+fanout_requires_coverage_matrix = true
+fanout_requires_lens_per_explorer = true
+fanout_requires_stop_condition = true
+require_budget_expansion_packet = true
+
+[tier_t4]
+final_reviewer = "reviewer_final"
+require_milestone_packets = true
+prefer_planner_first = true
+preferred_planner = "planner_frontier"
+default_milestone_worker = "worker_frontier"
+allow_batch_worker_for_low_risk_mechanical_milestones = true
+batch_worker_requires_availability_gate = true
+
+[agent_limits]
+max_threads = 6
+max_depth = 1
+
+[sidecar_policy]
+voice_tts_failure_affects_task_status = false
+voice_tts_failure_affects_route_status = false
+voice_tts_failure_status = "sidecar_failure"
+voice_tts_failure_note = "Record voice/TTS sidecar failures without changing task, route, validation, or reviewer status."
+
+[economics_policy]
+reference = "docs/references/model-economics-reference.2026-09-24.md"
+status = "user-authorized empirical assumption, not official pricing or guaranteed task equivalence"
+family_mapping_assumption = "image Sol/Terra/Luna -> existing gpt-5.6 identifiers; Astra -> gpt-6-astra"
+routine_astra_roles = ["worker_frontier", "reviewer_risk", "planner_frontier", "reviewer_final"]
+specialist_gate_scope = "reasoning_specialist only; routine approved Astra low/medium roles do not need this gate"
+astra_high_rule = "documented medium reasoning inadequacy; never capacity-driven automatic high"
+astra_xhigh_max_ultra_rule = "explicit user request plus runtime support"
+
+[execution_mapping_policy]
+compare_registered_model_effort_to_controls = true
+stale_registration_fallback = "default child with explicit mapped model and effort, bounded fork/context, full role instructions and acceptance criteria"
+require_exact_model_effort_availability = true
+require_actual_enforcement_evidence = true
+prompt_only_is_hard_isolation = false
+route_blocked_if_required_isolation_unavailable = true
+fallback_rule = "Record unavailability or unsuitability, chosen pinned fallback and evidence before invocation; no hidden rerouting. No unapproved expensive automatic high."
+
+[fallback_profiles.explorer]
+profile = "profiles/explorer-terra-fallback.config.toml"
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+sandbox_mode = "read-only"
+
+[fallback_profiles.worker_standard]
+profile = "profiles/worker-terra-fallback.config.toml"
+model = "gpt-5.6-terra"
+model_reasoning_effort = "high"
+sandbox_mode = "workspace-write"
