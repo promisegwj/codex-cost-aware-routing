@@ -24,6 +24,8 @@ credentials.json
 *.pem
 *.key
 __pycache__/
+*.py[cod]
+config.toml
 node_modules/
 .venv/
 

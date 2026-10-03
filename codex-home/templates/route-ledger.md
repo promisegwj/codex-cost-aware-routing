@@ -12,7 +12,7 @@
 - current route state:
 - selected implementation path:
 - degraded execution requested by user: yes/no
-- root default source: `gpt-5.6-sol / medium` from `codex-home/config-routing-snippet.toml`
+- root default source: `gpt-6-luna / medium` from `codex-home/config.toml`; record actual root selection separately
 - active role matrix source: `codex-home/routing-controls.toml [model_roles]`
 
 ## Exceptional GPT-6 Reasoning Gate
@@ -203,3 +203,34 @@ Only reasoning_specialist requires this gate; approved routine Astra low/medium 
 - exact availability evidence:
 - actual sandbox / prompt_only and required isolation:
 - pinned fallback, reason, suitability evidence:
+
+## Model And Effort Decision
+
+- task class / semantic complexity:
+- risk and workflow tier / required independent contexts:
+- actual root model and effort / evidence source:
+- selected execution profile / semantic role:
+- model selection evidence:
+- effort selection evidence:
+- expected vs registered actual mapping / explicit override:
+- failure class / identified cause / failure packet:
+- prior profile -> selected profile / transition reason:
+- automatic transitions used (maximum 2):
+- total writer attempts used for this acceptance matrix (maximum 3):
+- same-profile attempt / reviewer rework budgets:
+- selector status / runtime availability evidence:
+- advice distinguished from actual dispatch:
+
+## Accepted-Result Economics
+
+- task class and acceptance criteria identity:
+- acceptance result and validation coverage:
+- actual model / actual effort:
+- substantive rework and handoffs:
+- elapsed seconds:
+- observed tokens / observed Codex usage / unavailable:
+- cost source (API observation / Codex observation / unavailable):
+- comparable accepted observations:
+- future one-step lower-effort candidate / rollback profile:
+- current critical-risk task downgrade: prohibited
+- global automatic policy rewrite: prohibited

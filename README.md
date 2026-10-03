@@ -1,75 +1,87 @@
 # Codex Cost-Aware Routing
 
-按任务难度、风险和经验经济性选择 Codex 模型与代理的工作流。包含可维护的策略、agent 配置、profile、任务模板和验证脚本。
+按任务复杂度、后果和推理投入选择 Codex 模型与代理。当前策略：`2026-10-03-two-axis-v1`。
 
-这是由 Codex 读取执行的工作流规则与配置集合，不是独立的自动选模服务。模型可用性、实际代理绑定与沙箱能力需要在运行时核对。
+这是 Codex 读取执行的工作流规则与配置集合。选择器提供只读建议；真正派发由主代理执行，需检查实际模型绑定、可用性和隔离能力。
 
-## 当前角色映射
+## 当前模型与档位
 
-| 职责 | 模型 | 推理档位 |
+| 模型 | 正常路由覆盖的推理档位 | 主要职责 |
 |---|---|---|
-| 日常根线程 | `gpt-5.6-sol` | medium |
-| 低风险机械批处理 | `gpt-5.6-luna` | low |
-| 只读探索 | `gpt-5.6-luna` | high |
-| 常规实施 | `gpt-5.6-luna` | xhigh |
-| 高能力实施、风险评审 | `gpt-6-astra` | low |
-| 规划、最终评审 | `gpt-6-astra` | medium |
-| 受限推理专家 | `gpt-6-astra` | medium，需独立证据门槛 |
+| GPT-6 Luna | low / medium / high | 发现、简单根线程任务、边界清楚的 T2 |
+| GPT-6.1 Sol | medium / high | 复杂 T2 实施、独立 T2 审查、T4 规划；有证据时提高推理投入 |
+| GPT-6 Astra | low / medium / high | 高后果工作、T3/T4 实施审查、能力升级、最终审查；high 要求 medium 不足证据 |
+| GPT-5.6 Terra | medium / high（备用） | Luna 不可用且适合任务时的发现或实施回退 |
 
-映射依据见 [经济性参考](docs/references/model-economics-reference.2026-09-24.md)。能力分和消耗是用户提供的经验估计，不是官方价格，也不保证不同任务上的效果相同。Luna 不可用或不适合时，记录原因后使用指定 Terra 回退。Astra high 需要 medium 推理不足的证据，xhigh/max/ultra 需要用户明确要求和运行时支持。
+xhigh/max/ultra 不属于自动选择配置，要求用户明确提出和实际运行时支持。公开 API 价格不能推断 Codex 订阅消耗。
 
-## 路由流程
+## 路由与调整
 
-- T0/T1：根线程执行与针对性验证，不自动创建子代理。
-- T2：按范围、风险和验证不确定性决定是否委派，保留简短路由证据。
-- T3/T4：执行独立的探索、实施、规划或审查角色，不能用单线程扮演多角色代替。
-- 默认单个实施代理；先验证、再审查；失败后整理 failure packet，避免盲目重试。
-- 核对实际注册模型；旧映射使用显式模型和档位调用，并记录真实的沙箱约束。提示词只读不等同于沙箱隔离。
+- T0/T1 主线程直接完成；T2 按范围和验证需要条件委派；T3/T4 保留独立角色、单一写入者、验证后审查。
+- 普通复杂工作以 Sol/medium 起步。任务已理解而推导投入不足时，可走 Sol medium → high → Astra medium。
+- 持续理解或能力不足时，按证据直接换模型，不必逐档尝试。
+- 资料、指令、工具、环境、容量和已定位普通缺陷先处理原因，不自动增加推理投入。
+- 每个验收范围最多两次自动配置转换、三次写入尝试。观察五次可比成功后，可在后续任务试低一档，验收退化则恢复。
 
-![当前路由流程](docs/current-routing-workflow.png)
+这些阈值是本地策略，不是已完成的模型成本或性能实测。
 
-## 文件结构
+## 文档与文件
 
-- [routing-controls.toml](codex-home/routing-controls.toml)：角色映射与工作流策略。
-- [SKILL.md](codex-home/skills/codex-workflow/SKILL.md)：工作流入口。
-- [CODEX_WORKFLOW.md](codex-home/skills/codex-workflow/CODEX_WORKFLOW.md)：详细说明。
-- `codex-home/agents/`：代理模板；旧 5.4/5.5 角色仅供历史兼容。
-- `codex-home/profiles/`：模型配置及明确的回退 profile。
-- `codex-home/templates/`：路由记录、里程碑交接模板。
-- `scripts/`：同步、校验及历史经济性分析工具。
+- [直白说明与完整例子](模型档位与路由方法说明.md)
+- [实施记录](路由方案实施记录.md)
+- [权威策略](codex-home/routing-controls.toml)
+- [技能入口](codex-home/skills/codex-workflow/SKILL.md)
+- [模型与档位选择说明](codex-home/skills/codex-workflow/references/two-axis-routing.md)
+- `codex-home/agents/`：角色默认配置；旧角色仅供历史兼容。
+- `codex-home/profiles/`：原生配置片段和明确的回退。
+- `codex-home/templates/`：路由和阶段交接模板。
+- `scripts/`：导出、同步、验证及历史经济性分析工具。
 
-## 在自己的环境中使用
+旧流程图和日期固定的经济性材料保留为历史参考；它们的模型标签不能替代当前策略。
 
-本项目保留原作者的 Windows 路径和个人工作流约定。部署前请检查并修改 `codex-home/AGENTS.md` 中的本地路径、语音命令，以及 skill、脚本中的运行环境引用。语音工具属于外部项目，本仓库不附带它。
+## Git 管理与本机同步
 
-先备份目标 Codex 配置目录中的同名文件，再预览同步操作：
+仓库保留 `promisegwj/codex-cost-aware-routing` 原有提交历史，部署文件继续位于 `codex-home/`。
+
+本机运行文件在 Codex 用户目录，当前电脑为 `C:/Users/ZengS/.codex`。本机变更后，导出受管理文件并检查差异：
+
+```powershell
+.\scripts\export-routing.ps1
+git diff
+```
+
+导出按 `routing-files.txt` 的 21 项清单复制，并提取根模型默认值。它不导出完整全局配置、认证信息、会话和缓存。Git 提交不会自动部署。
+
+部署前备份目标同名文件；先预览：
 
 ```powershell
 .\scripts\sync-to-codex-home.ps1 -CodexHome "$env:USERPROFILE\.codex" -WhatIf
 ```
 
-确认目标与文件清单后同步：
+实际同步：
 
 ```powershell
 .\scripts\sync-to-codex-home.ps1 -CodexHome "$env:USERPROFILE\.codex"
 ```
 
-同步脚本会覆盖管理范围内的同名文件，包括全局 `AGENTS.md`，不会自动备份，也不会自动合并 `config.toml`。只将 [config-routing-snippet.toml](codex-home/config-routing-snippet.toml) 中需要的键合并到已有配置，保留插件、MCP 等其他配置。不要将 `routing-controls.toml` 的自定义策略键直接放入 `config.toml`。
-
-现有任务可能仍持有旧模型绑定；新上下文需要重新加载配置，并核对实际模型及档位。
+同步会覆盖管理范围内的路由文件，合并全局 AGENTS 中的 managed 路由段，保留其他指令；profile 复制到目标 `profiles/`。它不会自动备份或合并 `config.toml`。只把 `codex-home/config-routing-snippet.toml` 的两个键按需合并到已有全局配置，并按实际需要保留代理启用与线程上限设置。详细路由自定义键不能放进 `config.toml`。
 
 ## 验证
+
+需要 Python 3.11+，不再依赖原作者 E 盘的工具路径。当前电脑默认使用应用提供的 Python：
 
 ```powershell
 .\scripts\test-routing-policy.ps1
 ```
 
-当前验证脚本从作者的 `E:\CodexWorkSpace\工作环境必要配置\tool-routing.json` 读取 Python 路径；其他机器需适配该路径或 Python 入口，并使用支持 `tomllib` 的 Python 3.11+。检查覆盖角色、agent、profile、回退配置的一致性，以及常规 Astra 路由与受限专家的边界。
+其他环境指定解释器：
 
-流程图源文件为 [SVG](docs/current-routing-workflow.svg)。PNG 是便于查看的导出版本。
+```powershell
+.\scripts\test-routing-policy.ps1 -PythonPath 'C:\absolute\python.exe'
+```
 
-## 公开范围与历史工具
+检查角色、八个自动配置、回退及原生 profile 的一致性，并运行路由场景检查。检查器不调用模型，不确认账户的模型容量或权限。
 
-原始 Codex 对话、内部工作记忆、机器部署记录、历史来源文档及本地备份不在公开仓库中；这些内容由 `.gitignore` 排除。本地维护时可保留 `WORK_MEMORY.md`，不要提交会话或认证数据。
+## 历史与公开范围
 
-`scripts/estimate-routing-economics.mjs` 和 `docs/pricing/openai-price-book.2026-06-11.json` 是历史试算工具与日期固定的参考数据，尚未用于当前 Luna/Astra 路由的费用评估。该脚本依赖本地 `docs/transcripts/*.jsonl`，公开仓库不提供这些输入；不要将旧试算结果当作当前费用或 Codex 账单。
+保留原仓库的历史角色、经济性资料和分析工具，不将它们作为当前默认模型路线。`WORK_MEMORY.md`、对话、认证、日志及缓存不提交。历史费用估算不能代表当前 Codex 账单。

@@ -40,6 +40,7 @@ function Copy-ManagedTree {
 
     $sourceFull = [System.IO.Path]::GetFullPath($SourceDir).TrimEnd('\', '/')
     Get-ChildItem -LiteralPath $SourceDir -File -Recurse | ForEach-Object {
+        if ($_.FullName -match '[\\/]__pycache__[\\/]' -or $_.Extension -in @('.pyc', '.pyo')) { return }
         $fileFull = [System.IO.Path]::GetFullPath($_.FullName)
         $relative = $fileFull.Substring($sourceFull.Length).TrimStart('\', '/')
         $target = Join-Path $DestinationDir $relative
@@ -53,7 +54,25 @@ Copy-ManagedTree -SourceDir (Join-Path $SourceRoot "templates") -DestinationDir 
 
 $GlobalAgents = Join-Path $SourceRoot "AGENTS.md"
 if (Test-Path -LiteralPath $GlobalAgents) {
-    Copy-ManagedFile -Source $GlobalAgents -Destination (Join-Path $CodexHome "AGENTS.md")
+    $targetAgents = Join-Path $CodexHome 'AGENTS.md'
+    if ($WhatIf) {
+        Write-Host "[what-if] Merge managed routing section $GlobalAgents -> $targetAgents"
+    } else {
+        $section = (Get-Content -LiteralPath $GlobalAgents -Raw).TrimEnd()
+        $existing = if (Test-Path -LiteralPath $targetAgents) { [IO.File]::ReadAllText($targetAgents) } else { '' }
+        $sectionPattern = '(?ms)^## Codex model routing \(managed\)\r?\n.*?(?=^## |\z)'
+        if ([regex]::IsMatch($existing, $sectionPattern)) {
+            $updated = [regex]::Replace($existing, $sectionPattern, [System.Text.RegularExpressions.MatchEvaluator]{
+                param($match)
+                $suffix = if ($match.Index + $match.Length -lt $existing.Length) { "`n`n" } else { "`n" }
+                $section + $suffix
+            })
+        } else {
+            $updated = $existing.TrimEnd() + "`n`n" + $section + "`n"
+        }
+        New-Item -ItemType Directory -Force -Path $CodexHome | Out-Null
+        [IO.File]::WriteAllText($targetAgents, $updated, [Text.UTF8Encoding]::new($false))
+    }
 }
 
 $RoutingControls = Join-Path $SourceRoot "routing-controls.toml"
@@ -63,9 +82,7 @@ if (Test-Path -LiteralPath $RoutingControls) {
 
 $ProfilesDir = Join-Path $SourceRoot "profiles"
 if (Test-Path -LiteralPath $ProfilesDir) {
-    Get-ChildItem -LiteralPath $ProfilesDir -Filter "*.config.toml" -File | ForEach-Object {
-        Copy-ManagedFile -Source $_.FullName -Destination (Join-Path $CodexHome $_.Name)
-    }
+    Copy-ManagedTree -SourceDir $ProfilesDir -DestinationDir (Join-Path $CodexHome 'profiles')
 }
 
 $Snippet = Join-Path $SourceRoot "config-routing-snippet.toml"
