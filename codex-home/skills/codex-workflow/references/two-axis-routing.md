@@ -4,6 +4,16 @@ The authoritative defaults, transition rules and budgets are in routing-controls
 These are policy heuristics, not measured model performance claims. Never rank all
 model/effort pairs on a single guaranteed intelligence scale.
 
+## Resolve routing configuration paths first
+
+`routing-controls.toml` is a Codex home root file, not a skill-local resource. Resolve it before reading policy or selecting roles:
+
+- Installed skill: use `$CODEX_HOME/routing-controls.toml` when CODEX_HOME is set; otherwise use `$USERPROFILE/.codex/routing-controls.toml` on Windows.
+- Repository source: when maintaining this project, use `<project-root>/codex-home/routing-controls.toml`; compare it with the deployed file only when checking or deploying runtime behavior. Do not silently substitute repository policy for missing runtime policy.
+- From the skill directory, the home root is two directory levels above: `../../routing-controls.toml`. `config.toml`, `agents/` and `templates/` also belong to that home root. Only `references/` and `scripts/` are skill-relative.
+- Never try `<skill-directory>/routing-controls.toml`, including `$CODEX_HOME/skills/codex-workflow/routing-controls.toml`. Check the resolved file with `Test-Path -LiteralPath` before reading it; if missing, report the exact missing path and classify it as a configuration/context failure. Do not recursively scan Codex home or infer model defaults from a different file.
+- Record the resolved controls path in route evidence. `scripts/select_route.py` already resolves the home root with `Path(__file__).resolve().parents[3]`; its advice is not dispatch evidence.
+
 ## Decision order
 
 1. Classify workflow tier and consequences. T3/T4 independence, validation and
@@ -66,10 +76,11 @@ suffices for obvious T0/T1 work. Always record actual execution separately.
 PowerShell (bundled runtime, no reliance on the broken local py launcher):
 
 ```powershell
-$routePython = 'C:\Users\ZengS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe'
-$routeScript = 'C:\Users\ZengS\.codex\skills\codex-workflow\scripts\select_route.py'
+$routePython = Join-Path $env:USERPROFILE '.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'
+$routeHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USERPROFILE '.codex' }
+$routeScript = Join-Path $routeHome 'skills/codex-workflow/scripts/select_route.py'
 '{"tier":"T2","complexity":"integrated"}' | & $routePython $routeScript
-& $routePython $routeScript --task 'C:\absolute\task.json'
+& $routePython $routeScript --task (Join-Path (Get-Location) 'task.json')
 & $routePython $routeScript --check-policy
 ```
 

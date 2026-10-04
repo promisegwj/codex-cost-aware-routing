@@ -43,7 +43,7 @@ xhigh/max/ultra 不属于自动选择配置，要求用户明确提出和实际�
 
 仓库保留 `promisegwj/codex-cost-aware-routing` 原有提交历史，部署文件继续位于 `codex-home/`。
 
-本机运行文件在 Codex 用户目录，当前电脑为 `C:/Users/ZengS/.codex`。本机变更后，导出受管理文件并检查差异：
+本机运行文件在 Codex 用户目录，使用 `$CODEX_HOME`（未设置时为 `$USERPROFILE/.codex`）。本机变更后，导出受管理文件并检查差异：
 
 ```powershell
 .\scripts\export-routing.ps1
@@ -77,7 +77,7 @@ git diff
 其他环境指定解释器：
 
 ```powershell
-.\scripts\test-routing-policy.ps1 -PythonPath 'C:\absolute\python.exe'
+.\scripts\test-routing-policy.ps1 -PythonPath '<python-executable>'
 ```
 
 检查角色、八个自动配置、回退及原生 profile 的一致性，并运行路由场景检查。检查器不调用模型，不确认账户的模型容量或权限。

@@ -39,6 +39,8 @@ foreach ($taskKey in @('model', 'model_reasoning_effort')) {
 }
 $taskSnippet = @(
     '# Routing root defaults only. Merge these keys; do not replace a full config.toml.'
+    '# In an existing [agents] table, use max_concurrent_threads_per_session = 6.'
+    '# max_threads is its legacy alias; never configure both names together.'
     ('model = "{0}"' -f $taskRootDefaults['model'])
     ('model_reasoning_effort = "{0}"' -f $taskRootDefaults['model_reasoning_effort'])
 )
