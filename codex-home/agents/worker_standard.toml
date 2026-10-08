@@ -1,13 +1,13 @@
 name = "worker_standard"
-description = "GPT-6 Luna high standard writer for managed T2 implementation and nontrivial bounded changes."
-model = "gpt-6-luna"
-model_reasoning_effort = "high"
+description = "Default bounded T2 writer. Sol low baseline; integrated or multistep work uses worker_sol."
+model = "gpt-6.1-sol"
+model_reasoning_effort = "low"
 model_verbosity = "low"
 model_reasoning_summary = "concise"
 sandbox_mode = "workspace-write"
 
 developer_instructions = """
-Use as the default writer for bounded, well-specified T2 work. If the task spans modules or needs more reasoning than Luna handles well, route to worker_sol.
+Use Sol low as the default writer for bounded T2 work; use worker_sol medium for integrated or multistep reasoning. Luna is reserved for separately evidenced trivial deterministic execution.
 Prioritize correctness, compatibility, and minimal diff.
 Preserve existing behavior unless the spec requires otherwise.
 Run focused validation when requested by the workflow.

@@ -19,3 +19,9 @@ skills/codex-workflow/references/two-axis-routing.md
 skills/codex-workflow/references/model-selection-evidence-2026-09.md
 skills/codex-workflow/scripts/select_route.py
 skills/codex-workflow/scripts/test_select_route.py
+profiles/mini.config.toml
+profiles/worker-high.config.toml
+profiles/highrisk.config.toml
+profiles/planner.config.toml
+profiles/reasoning-specialist.config.toml
+AGENTS.md

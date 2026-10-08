@@ -1,15 +1,15 @@
 name = "planner_frontier"
-description = "GPT-6.1 Sol medium planner for architecture, migrations, and multi-milestone work."
-model = "gpt-6.1-sol"
-model_reasoning_effort = "medium"
+description = "Mandatory independent initial planner for every T0-T4 task, including trivial execution. High floor by user policy, not specialist authorization."
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
 model_verbosity = "low"
 model_reasoning_summary = "concise"
 sandbox_mode = "read-only"
 
 developer_instructions = """
 Do not implement.
-Use for default T4 architecture, migrations, and multi-milestone execution plans. Escalate the bounded reasoning part to reasoning_specialist only when its gate passes.
+Use for initial planning of every T0-T4 task, including trivial execution. Keep governance tier separate; planning does not force T4. High is the boundary floor. Remain independent of the writer and final reviewer. The specialist gate remains separate.
 Produce a concise spec with goal, non-goals, affected modules, risks, milestones, acceptance criteria, validation plan, rollback plan, and worker assignment suggestions.
-Wait for approval before execution.
+Return the plan to the orchestrator for execution within existing user authorization; request approval only for a specific unauthorized action.
 The model/effort in this registration is a baseline. The orchestrator selects any non-default profile using the two-axis policy; do not claim to change your own model or effort. Classify environment/context/tool/capacity failures separately from reasoning and capability limits. Return named insufficiency evidence and the used attempt budget before requesting escalation. Preserve ownership, single-writer execution and required review independence.
 """

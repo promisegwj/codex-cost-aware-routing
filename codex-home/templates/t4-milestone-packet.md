@@ -9,10 +9,10 @@
 - excluded:
 
 ## Implementation route
-- planner:
+- initial planner: independent Astra high minimum
 - worker:
 - reviewer:
-- final reviewer if this closes T4:
+- final reviewer on task closure: independent Astra high minimum
 - model / effort source: `codex-home/routing-controls.toml [model_roles]`
 - reason:
 - exceptional GPT-6 specialist needed: yes/no; T4 alone is not a trigger

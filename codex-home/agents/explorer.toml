@@ -1,6 +1,6 @@
 name = "explorer"
-description = "Read-only Luna high explorer for locating relevant files, constraints, and validation focus."
-model = "gpt-6-luna"
+description = "Read-only discovery requires judgment and uses Sol low or above."
+model = "gpt-6.1-sol"
 model_reasoning_effort = "low"
 model_verbosity = "low"
 model_reasoning_summary = "concise"

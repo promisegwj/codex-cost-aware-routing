@@ -12,8 +12,19 @@
 - current route state:
 - selected implementation path:
 - degraded execution requested by user: yes/no
-- root default source: `gpt-6-luna / medium` from `codex-home/config.toml`; record actual root selection separately
+- root default source: `gpt-6.1-sol / low` from `codex-home/config.toml`; record actual root selection separately
 - active role matrix source: `codex-home/routing-controls.toml [model_roles]`
+
+## Mandatory Initial Planning and Final Review
+
+- initial planner child id / actual model effort: Astra high minimum
+- final reviewer child id / actual model effort: Astra high minimum
+- independent from writer and each other: yes/no
+- all tiers including trivial execution: required; no exemption
+- trivial execution classification / execution evidence if Luna medium chosen:
+- boundary availability / route_blocked reason:
+- three-child baseline: planner + writer + final; optional explorer needs expansion
+- T3 required intermediate review expansion: recorded before fourth child
 
 ## Exceptional GPT-6 Reasoning Gate
 

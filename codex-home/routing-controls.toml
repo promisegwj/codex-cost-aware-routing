@@ -12,7 +12,7 @@ max_review_rounds = 1
 output_style = "concise"
 prefer_static_preroute = true
 require_failure_packet_after_failed_attempt = true
-enforcement_mode = "hard_for_T3_T4_managed_for_T2"
+enforcement_mode = "mandatory_boundary_roles_all_tiers_hard_T3_T4_managed_T2"
 require_route_evidence = true
 require_route_ledger = true
 require_all_child_contexts_in_evidence = true
@@ -34,42 +34,39 @@ compact_route_evidence_required_fields = ["route_decision", "spawned_children_if
 model_effort_role_config_label = "routing-controls execution_profiles selection + model_roles baseline"
 goal_mode_note = "Goal mode and Goal-mode are continuation or handoff wrappers, not route evidence."
 t2_t3_default_child_budget = 3
+# Planner + one writer + final reviewer; optional discovery needs an expansion packet.
 
 [root_default]
 role = "root_direct"
-model = "gpt-6-luna"
-model_reasoning_effort = "medium"
-reason = "lowest-cost registered model for simple direct work; escalate when scope or risk exceeds its measured lane"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "low"
+reason = "Sol low is the normal default; Luna medium only for evidenced trivial deterministic execution"
 
 [model_roles.batch_worker]
 model = "gpt-6-luna"
-model_reasoning_effort = "low"
+model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 availability_gate = true
 fallback_role = "worker_standard"
-notes = "Use only for clearly batchable low-risk mechanical work after confirming Luna is exposed on the current surface."
+notes = "Only evidenced trivial deterministic low-risk execution; no diagnosis, design, ambiguity or substantive reasoning. Availability gate required; otherwise Sol low."
 
 [model_roles.explorer]
-model = "gpt-6-luna"
+model = "gpt-6.1-sol"
 model_reasoning_effort = "low"
 sandbox_mode = "read-only"
-notes = "Read-only discovery role; replaces scout_mini in active defaults."
-availability_gate = true
-fallback_profile = "explorer-terra-fallback"
+notes = "Read-only discovery requires judgment and uses Sol low or above."
 
 [model_roles.worker_standard]
-model = "gpt-6-luna"
-model_reasoning_effort = "high"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "low"
 sandbox_mode = "workspace-write"
-notes = "Default T2 writer for bounded, well-specified changes. GPT-6 Luna is cost-efficient but not the default for difficult agentic work; route multi-module or reasoning-heavy implementation to worker_sol."
-availability_gate = true
-fallback_profile = "worker-terra-fallback"
+notes = "Default bounded T2 writer. Sol low baseline; integrated or multistep work uses worker_sol."
 
 [model_roles.worker_sol]
 model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
-notes = "Intermediate T2 writer for multi-module, multi-file, or reasoning-heavy implementation that exceeds Luna's efficient lane without a critical-risk trigger."
+notes = "Intermediate T2 writer for multi-module, multi-file, or reasoning-heavy implementation that requires integrated or multistep reasoning without a critical-risk trigger."
 [model_roles.worker_frontier]
 model = "gpt-6-astra"
 model_reasoning_effort = "low"
@@ -88,16 +85,16 @@ model_reasoning_effort = "low"
 sandbox_mode = "read-only"
 notes = "Independent review for T3/T4 and critical-risk changes; do not use for routine T2 reviews."
 [model_roles.planner_frontier]
-model = "gpt-6.1-sol"
-model_reasoning_effort = "medium"
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
-notes = "Default T4 planner for architecture and migration specs; use the gated Astra specialist only when bounded reasoning evidence justifies it."
+notes = "Mandatory independent initial planner for every T0-T4 task, including trivial execution. High floor by user policy, not specialist authorization."
 
 [model_roles.reviewer_final]
 model = "gpt-6-astra"
-model_reasoning_effort = "medium"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
-notes = "Final T4 cross-milestone review."
+notes = "Mandatory independent final reviewer for every T0-T4 task after validation. High floor, including trivial execution."
 
 [model_roles.reasoning_specialist]
 model = "gpt-6-astra"
@@ -110,7 +107,7 @@ notes = "Exceptional bounded reasoning or planning specialist only after the GPT
 [preferred_roles]
 t0_worker = "root_direct"
 t1_worker = "root_direct"
-t1_reviewer = "none_by_default"
+t1_reviewer = "reviewer_final"
 t2_explorer = "explorer"
 t2_worker = "worker_standard"
 t2_sol_worker = "worker_sol"
@@ -129,11 +126,29 @@ legacy_worker_55_alias = "worker_55"
 legacy_planner_55_alias = "planner_55"
 
 [tier_defaults]
-T0 = "root_direct -> focused validation -> return"
-T1 = "root_direct -> focused validation -> return; no automatic child spawn"
-T2 = "managed conditional: root decision -> optional explorer -> Luna or GPT-6.1 Sol by semantic complexity and effort profile -> validation -> optional reviewer_risk; Astra for high consequences or evidenced assigned-model limitations"
-T3 = "explicit hard route: explorer -> worker_frontier -> validation -> reviewer_frontier"
-T4 = "explicit hard route: planner_frontier -> spec approval -> staged worker_frontier execution -> reviewer_frontier -> reviewer_final"
+T0 = "planner_frontier -> root_direct or eligible batch_worker -> validation -> reviewer_final"
+T1 = "planner_frontier -> root_direct or eligible batch_worker -> validation -> reviewer_final"
+T2 = "planner_frontier -> managed Sol writer -> validation -> optional risk review -> reviewer_final"
+T3 = "planner_frontier -> worker_frontier -> validation -> reviewer_frontier -> reviewer_final; required four roles need recorded budget expansion beyond three"
+T4 = "planner_frontier -> authorized staged execution -> milestone validation and reviewer_frontier -> reviewer_final"
+
+[boundary_policy]
+all_tiers = ["T0", "T1", "T2", "T3", "T4"]
+initial_planner = "planner_frontier"
+final_reviewer = "reviewer_final"
+minimum_model = "gpt-6-astra"
+minimum_reasoning_effort = "high"
+independent_contexts_required = true
+trivial_execution_exemption = false
+fallback_if_unavailable = "route_blocked"
+existing_authorization_suffices = true
+
+[luna_policy]
+only_profile = "luna_medium"
+require_trivial_execution_flag = true
+require_execution_evidence = true
+eligibility = "bounded low-risk deterministic execution without diagnosis, design, ambiguity or substantive reasoning; no shared config, engineering, architecture or critical risk"
+ineligible_fallback_profile = "sol_low"
 
 [t2_policy]
 managed_conditional = true
@@ -158,33 +173,30 @@ frontier_escalation_triggers = [
 compact_evidence_note = "For T2, record the decision, any spawned child ids, validation result, and why frontier capability was or was not triggered; full route ledgers are still allowed."
 
 [selection_policy]
-version = "2026-10-03-two-axis-v1"
+version = "2026-10-07-sol-default-astra-high-boundaries-v2"
 selector = "skills/codex-workflow/scripts/select_route.py"
 separate_workflow_tier_model_and_effort = true
 file_count_alone_upgrades_model = false
 high_confidence_alone_upgrades_model = false
 critical_risk_minimum_tier = "T3"
 critical_risk_model = "gpt-6-astra"
-bounded_t2_profile = "luna_high"
+bounded_t2_profile = "sol_low"
 integrated_t2_profile = "sol_medium"
 dense_reasoning_profile = "sol_high"
 frontier_default_profile = "astra_low"
 frontier_coupled_profile = "astra_medium"
-planner_profile = "sol_medium"
-final_review_profile = "astra_medium"
+planner_profile = "astra_high"
+final_review_profile = "astra_high"
 root_model_rule = "config.toml is a default, not actual-session evidence; record the selected runtime model and effort. Do not silently switch the user's chosen root model."
 high_confidence_rule = "Strengthen acceptance criteria, focused validation, and independent review; use model or effort escalation only with a capability or reasoning reason."
 invocation_rule = "Use the registered semantic role only when its actual model/effort matches the selected profile. Otherwise use a default child with explicit model/effort, bounded context, complete role instructions, ownership, acceptance criteria and recorded enforcement. Never count advice as executed routing."
 
-[execution_profiles.luna_low]
-model = "gpt-6-luna"
-model_reasoning_effort = "low"
 [execution_profiles.luna_medium]
 model = "gpt-6-luna"
 model_reasoning_effort = "medium"
-[execution_profiles.luna_high]
-model = "gpt-6-luna"
-model_reasoning_effort = "high"
+[execution_profiles.sol_low]
+model = "gpt-6.1-sol"
+model_reasoning_effort = "low"
 [execution_profiles.sol_medium]
 model = "gpt-6.1-sol"
 model_reasoning_effort = "medium"
@@ -210,18 +222,17 @@ non_reasoning_failures = ["context", "instructions", "tool", "environment", "cap
 non_reasoning_action = "Repair the identified cause or apply recorded availability fallback; do not increase reasoning or open the specialist gate. Re-score tier if new critical risk is discovered."
 effort_limit_evidence = "Task and assumptions were understood; required context/tools worked; a specific missed derivation, alternative, or constraint is demonstrated. One next-effort attempt on the same acceptance criteria."
 capability_limit_evidence = "Persistent misunderstanding, wrong abstraction, domain or tool-planning limits, or coupled/novel work exceeding the assigned model; explain why extra effort is unlikely to fix it."
+sol_low_effort_next = "sol_medium"
 sol_medium_effort_next = "sol_high"
 sol_high_effort_next = "astra_medium"
-luna_low_effort_next = "luna_medium"
-luna_medium_effort_next = "luna_high"
-luna_high_effort_next = "sol_medium"
+luna_medium_effort_next = "sol_medium"
 astra_low_effort_next = "astra_medium"
 astra_medium_effort_next = "astra_high"
 astra_high_effort_next = "stop_and_handoff"
 luna_capability_next = "sol_medium"
 sol_capability_next = "astra_medium"
 astra_capability_next = "stop_or_gated_specialist"
-high_effort_initial_rule = "Sol high may be selected for bounded dense reasoning only with named constraint/derivation evidence. Astra high requires demonstrated medium inadequacy."
+high_effort_initial_rule = "Sol high may be selected for bounded dense reasoning only with named constraint/derivation evidence. Initial planning and final review require Astra high by user policy; implementation/specialist Astra high requires demonstrated medium inadequacy."
 extreme_effort_rule = "xhigh/max/ultra only with explicit user request and exact runtime support; no automatic route."
 budget_exhaustion_rule = "Stop new writing attempts, preserve progress and return a failure/continuation packet; extra budget requires explicit user authorization."
 
@@ -231,7 +242,7 @@ observation_fields = ["task_class", "tier", "role", "actual_model", "actual_effo
 missing_usage_rule = "Record unavailable; never estimate subscription consumption from API prices."
 downgrade_scope = "future independent tasks in the same task class, never an unfinished high-risk task"
 minimum_observations_before_candidate = 5
-candidate_rule = "Five comparable accepted runs without substantive rework permit a one-step lower-effort candidate; verify the same acceptance criteria and restore the prior profile on regression. This is a policy heuristic, not benchmark proof."
+candidate_rule = "Five comparable accepted runs without substantive rework permit a one-step lower-effort candidate within Sol low and boundary Astra high floors; Luna requires trivial execution eligibility; verify the same acceptance criteria and restore the prior profile on regression. This is a policy heuristic, not benchmark proof."
 automatic_global_policy_rewrite = false
 
 [exceptional_reasoning_policy]
@@ -286,6 +297,7 @@ prefer_send_input_for_reviewer_closure = true
 new_spawn_requires_reason = true
 respect_user_requested_agent_count_as_cap = true
 t2_t3_default_child_budget = 3
+# Planner + one writer + final reviewer; optional discovery needs an expansion packet.
 max_same_role_per_scope_without_expansion = 1
 require_budget_expansion_packet = true
 placeholder_or_missent_child_status = "ignored"
@@ -308,7 +320,8 @@ require_same_reviewer_for_high_severity_rework_when_possible = true
 require_reviewer_identity_stickiness = true
 prefer_send_input_for_reviewer_closure = true
 new_reviewer_requires_reason = true
-max_reviewers_per_acceptance_matrix_without_expansion = 1
+max_reviewers_per_acceptance_matrix_without_expansion = 2
+# One intermediate risk reviewer plus one mandatory final reviewer when the tier requires both.
 allow_single_narrow_rework_pass = true
 require_closure_note_when_reviewer_cannot_rerun = true
 escalate_after_expanded_rework = true
@@ -327,7 +340,9 @@ require_milestone_packets = true
 prefer_planner_first = true
 preferred_planner = "planner_frontier"
 default_milestone_worker = "worker_frontier"
-allow_batch_worker_for_low_risk_mechanical_milestones = true
+allow_batch_worker_for_low_risk_mechanical_milestones = false
+allow_batch_worker_for_separately_scored_trivial_subtasks = true
+batch_subtask_rule = "Only separately scored T0/T1 trivial deterministic execution under a T4 parent may use Luna medium; never an entire T4 milestone. Parent retains frontier writer, milestone review and Astra high final review."
 batch_worker_requires_availability_gate = true
 
 [agent_limits]
@@ -343,10 +358,10 @@ voice_tts_failure_note = "Record voice/TTS sidecar failures without changing tas
 [economics_policy]
 reference = "skills/codex-workflow/references/model-selection-evidence-2026-09.md"
 status = "API token prices are comparison proxies only; Codex subscription consumption is not established by API pricing"
-family_mapping_assumption = "use exact registered model IDs: GPT-6 Luna, GPT-6.1 Sol, GPT-6 Astra; keep GPT-5.6 models only as pinned fallbacks where configured"
-routine_astra_roles = ["worker_frontier", "reviewer_frontier", "reviewer_final", "reasoning_specialist"]
-specialist_gate_scope = "reasoning_specialist only; routine approved Astra low/medium roles do not need this gate"
-astra_high_rule = "documented medium reasoning inadequacy; never capacity-driven automatic high"
+family_mapping_assumption = "use exact registered model IDs: GPT-6 Luna, GPT-6.1 Sol, GPT-6 Astra; historical GPT-5.6 profiles are inactive, not automatic fallbacks"
+routine_astra_roles = ["planner_frontier", "worker_frontier", "reviewer_frontier", "reviewer_final", "reasoning_specialist"]
+specialist_gate_scope = "reasoning_specialist only; routine approved Astra roles, including high boundary roles do not need this gate"
+astra_high_rule = "initial planning/final review: mandatory user-authorized high floor; implementation/specialist: documented medium inadequacy; never capacity-driven automatic high"
 astra_xhigh_max_ultra_rule = "explicit user request plus runtime support"
 
 [execution_mapping_policy]
@@ -358,16 +373,6 @@ require_exact_model_effort_availability = true
 require_actual_enforcement_evidence = true
 prompt_only_is_hard_isolation = false
 route_blocked_if_required_isolation_unavailable = true
-fallback_rule = "Record unavailability or unsuitability, chosen pinned fallback and evidence before invocation; no hidden rerouting. No unapproved expensive automatic high."
+fallback_rule = "Record unavailability or unsuitability, chosen safe Sol/Astra fallback and evidence before invocation; no hidden rerouting. No unapproved expensive automatic high."
 
-[fallback_profiles.explorer]
-profile = "profiles/explorer-terra-fallback.config.toml"
-model = "gpt-5.6-terra"
-model_reasoning_effort = "medium"
-sandbox_mode = "read-only"
-
-[fallback_profiles.worker_standard]
-profile = "profiles/worker-terra-fallback.config.toml"
-model = "gpt-5.6-terra"
-model_reasoning_effort = "high"
-sandbox_mode = "workspace-write"
+# Historical Terra profiles remain as inactive files; active automatic fallbacks use Sol low or a safe Astra profile with recorded availability evidence.

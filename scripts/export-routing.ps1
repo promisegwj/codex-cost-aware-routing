@@ -22,7 +22,15 @@ foreach ($taskRelative in $taskManifest) {
         throw 'Run this exporter from the repository, not from the deployed Codex directory.'
     }
     New-Item -ItemType Directory -Force -Path (Split-Path $taskDestination) | Out-Null
-    Copy-Item -LiteralPath $taskSource -Destination $taskDestination
+    if ($taskRelative -eq 'AGENTS.md') {
+        # Export only the routing section, never unrelated machine-global instructions.
+        $taskAgentsText = [IO.File]::ReadAllText($taskSource)
+        $taskManagedMatch = [regex]::Match($taskAgentsText, '(?ms)^## Codex model routing \(managed\)\r?\n.*?(?=^## |\z)')
+        if (-not $taskManagedMatch.Success) { throw 'Managed routing AGENTS section is missing' }
+        [IO.File]::WriteAllText($taskDestination, $taskManagedMatch.Value.TrimEnd() + "`n", [Text.UTF8Encoding]::new($false))
+    } else {
+        Copy-Item -LiteralPath $taskSource -Destination $taskDestination
+    }
 }
 
 # Extract only root model defaults; no credentials, servers or notification paths.

@@ -18,7 +18,7 @@ Workflow policy defaults and the semantic role-to-model matrix live in `routing-
 
 - Complete work reliably without letting underpowered first attempts create repeated rework.
 - Conserve credits through deterministic routing, bounded context, and fewer retry loops.
-- Use the root thread directly for T0/T1 by default.
+- Use the root for T0/T1 implementation between required independent Astra high boundary roles.
 - Treat T2 as managed and conditional rather than always hard-routed.
 - Keep T3/T4 hard-routed with real independent execution evidence.
 - Allow only one active writing worker per write scope.
@@ -31,23 +31,23 @@ Workflow policy defaults and the semantic role-to-model matrix live in `routing-
 The root default source is `config.toml`:
 
 ```toml
-model = "gpt-6-luna"
-model_reasoning_effort = "medium"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "low"
 ```
 
-This is intentionally not xhigh. Ordinary routes use Luna for bounded work and GPT-6.1 Sol for intermediate complexity; Astra remains reserved for high-consequence roles. The exceptional gate applies only to reasoning_specialist.
+Sol low is the normal baseline. Luna medium requires trivial deterministic execution evidence. Initial planning and final review always use independent Astra high contexts, across all tiers. Implementation/specialist escalation remains evidence-gated.
 
 ## Two-Axis Selection And Adaptation
 
 Read `references/two-axis-routing.md` when model/effort selection or adaptation is nontrivial. `routing-controls.toml [selection_policy]`, `[execution_profiles]` and `[adaptation_policy]` are authoritative. `scripts/select_route.py` supplies read-only deterministic advice from evidence-backed classification; advice is not agent execution.
 
 - Choose workflow tier by consequences and governance, model by semantic capability, and effort by reasoning density. File count and a request for confidence alone do not force a model upgrade.
-- Use Sol medium for integrated T2 work; Sol high for named dense reasoning or demonstrated medium reasoning insufficiency. Use Astra low for frontier defaults and medium for named dense/coupled reasoning; Astra high requires documented medium inadequacy.
+- Use Sol medium for integrated T2 work; Sol high for named dense reasoning or demonstrated medium reasoning insufficiency. Use Astra low for frontier defaults and medium for named dense/coupled reasoning; Astra high is mandatory for initial planning/final review; implementation or specialist high requires documented medium inadequacy.
 - Diagnose failures first. Repair missing context, instructions, tools, environment and known ordinary defects; capacity follows availability fallback. None of these alone justifies increasing effort or invoking a specialist.
 - Effort limit: one next-effort attempt with evidence. Capability limit: direct model promotion with evidence. Sol medium -> high -> Astra medium is an effort path; Luna -> Sol medium -> Astra medium is a capability path, not a mandatory ladder.
 - Permit at most two automatic transitions and three total writer attempts per acceptance matrix, including ordinary repairs. One initial attempt per selected profile plus the separately bounded narrow rework pass; stop with a packet when the applicable budget is exhausted.
 - Keep independent roles, single writer, validation-before-review and specialist gate intact. A non-default profile must use an explicit mapped default child if the registered role does not match; copy full role instructions and inspect actual isolation. Do not pretend the root model switched.
-- Record actual profile, failure diagnosis, transition reason, budget, acceptance and observed usage. After five comparable accepted runs without substantive rework, consider one lower effort on a future independent task with identical checks; restore on regression. No automatic global rewrite.
+- Record actual profile, failure diagnosis, transition reason, budget, acceptance and observed usage. After five comparable accepted runs without substantive rework, consider one lower effort within the Sol low and boundary Astra high floors on a future independent task with identical checks; restore on regression. No automatic global rewrite.
 
 ## Semantic Role Matrix
 
@@ -55,19 +55,19 @@ The active role names describe responsibility instead of pinning policy to an ol
 
 | Role | Model / effort | Default use |
 |---|---|---|
-| `root_direct` | `gpt-6-luna / medium` | T0/T1 implementation, orchestration, compact T2 decisions |
-| `batch_worker` | `gpt-6-luna / low` | Availability-gated mechanical batch work |
-| `explorer` | `gpt-6-luna / low` | Read-only source discovery |
-| `worker_standard` | `gpt-6-luna / high` | Managed T2 implementation |
+| `root_direct` | `gpt-6.1-sol / low` | T0/T1 implementation, orchestration, compact T2 decisions |
+| `batch_worker` | `gpt-6-luna / medium` | Evidenced trivial deterministic, availability-gated mechanical batch work |
+| `explorer` | `gpt-6.1-sol / low` | Read-only source discovery |
+| `worker_standard` | `gpt-6.1-sol / low` | Managed T2 implementation |
 | `worker_sol` | `gpt-6.1-sol / medium` | Intermediate T2 writer for multi-module or reasoning-heavy work |
 | `worker_frontier` | `gpt-6-astra / low` | Critical-risk escalation, T3, T4 milestone work |
 | `reviewer_risk` | `gpt-6.1-sol / medium` | Independent review for T2 escalation |
 | `reviewer_frontier` | `gpt-6-astra / low` | T3/T4 and critical-risk review |
-| `planner_frontier` | `gpt-6.1-sol / medium` | T4 planning and migration specs |
-| `reviewer_final` | `gpt-6-astra / medium` | Final T4 cross-milestone review |
+| `planner_frontier` | `gpt-6-astra / high` | Mandatory initial planning, every T0–T4 task |
+| `reviewer_final` | `gpt-6-astra / high` | Mandatory final review after validation, every T0–T4 task |
 | `reasoning_specialist` | `gpt-6-astra / medium` | Exceptional bounded read-only reasoning after a separate gate |
 
-`worker_standard` uses GPT-6 Luna/high for bounded changes; `worker_sol` uses GPT-6.1 Sol/medium for multi-module or reasoning-heavy work. GPT-6 Astra is reserved for high-consequence escalation and the hard T3/T4 route.
+`worker_standard` uses Sol low for bounded changes; `worker_sol` uses Sol medium for integrated or multistep work. Luna medium only executes evidenced trivial deterministic steps. Every tier has independent Astra high planning/final review; intermediate risk review remains separate.
 
 Luna is not assumed to exist on every surface. `batch_worker` is guarded by `availability_gate = true` and falls back to `worker_standard` when unavailable or unsafe.
 
@@ -95,11 +95,11 @@ New workflow text, route ledgers, and diagrams should use semantic roles. Old na
 
 | Tier | Use when | Default route |
 |---|---|---|
-| T0 | typo, import, tiny single-file edit | `root_direct -> validation -> return` |
-| T1 | localized bug or small feature with clear scope | `root_direct -> validation -> return` |
-| T2 | medium complexity, unclear scope, high-value config/routing, small multi-file work | managed conditional: `optional explorer -> worker_standard or worker_sol by scope -> validation -> optional reviewer_risk` |
-| T3 | critical consequences, public contracts, unresolved implementation failure with potential high consequences | hard route: `explorer -> worker_frontier -> validation -> reviewer_frontier` |
-| T4 | architecture, migration, multi-milestone project | hard route: `planner_frontier -> spec approval -> staged worker_frontier -> reviewer_frontier -> reviewer_final` |
+| T0 | typo, import, tiny single-file edit | `planner_frontier -> root_direct or eligible batch_worker -> validation -> reviewer_final` |
+| T1 | localized bug or small feature with clear scope | `planner_frontier -> root_direct or eligible batch_worker -> validation -> reviewer_final` |
+| T2 | medium complexity, unclear scope, high-value config/routing, small multi-file work | managed conditional: `planner_frontier -> Sol writer by scope -> validation -> optional reviewer_risk -> reviewer_final` |
+| T3 | critical consequences, public contracts, unresolved implementation failure with potential high consequences | hard route: `planner_frontier -> worker_frontier -> validation -> reviewer_frontier -> reviewer_final` |
+| T4 | architecture, migration, multi-milestone project | hard route: `planner_frontier -> execution within existing authorization -> staged worker_frontier -> reviewer_frontier -> reviewer_final` |
 
 ## T2 Managed Conditional Route
 
@@ -116,10 +116,10 @@ Required compact evidence:
 Default T2 route:
 
 ```text
-root_direct decision -> optional explorer -> worker_standard or worker_sol by scope -> validation -> optional reviewer_risk
+planner_frontier -> Sol writer by scope -> validation -> optional reviewer_risk -> reviewer_final
 ```
 
-Use `worker_sol` (`gpt-6.1-sol / medium`) when scope exceeds bounded Luna work but has no critical-risk trigger. Escalate to `worker_frontier` (`gpt-6-astra / low`) for critical risk or evidenced assigned-model limits under the adaptation policy:
+Use `worker_sol` (`gpt-6.1-sol / medium`) when scope requires integrated or multistep Sol reasoning but has no critical-risk trigger. Escalate to `worker_frontier` (`gpt-6-astra / low`) for critical risk or evidenced assigned-model limits under the adaptation policy:
 
 - security, auth, permissions, payments, privacy, or encryption
 - data loss, data consistency, or migration risk
@@ -154,7 +154,7 @@ Medium is the default. High requires recorded evidence that medium reasoning was
 
 ## T3/T4 Hard Routing Enforcement
 
-For T3/T4, the route is not executed until required roles have real execution evidence.
+For required boundary roles at every tier and T3/T4 roles, the route is not executed until required roles have real execution evidence.
 
 1. Perform Execution Context Discovery. Record whether the current surface exposes subagent, thread, or model-override execution; visible roles; expected route; and route-blocked decision. If tools are not visible, use `tool_search` before returning `route_blocked`.
 2. Start or update a route ledger from `templates/route-ledger.md`.
@@ -177,7 +177,7 @@ When an existing child matches that key and is still suitable, send narrow follo
 Spawn Budget rules:
 
 - User-requested child counts are caps, not targets.
-- T2/T3 default child budget is three when children are actually needed.
+- T2/T3 default child budget is three: planner, one writer and final reviewer. Optional explorers require an explicit expansion packet. T3 intermediate reviewer is a fourth required context; record the policy-required expansion before spawning it.
 - The same role may appear at most once for the same scope unless the scope or acceptance matrix expands.
 - Budget expansion requires a packet naming the requested expansion, current children, why reuse is unsafe, expected extra value, and stop condition.
 - Placeholder, mistaken, or wrong-scope children are recorded as `ignored` / `pollution`.
@@ -194,7 +194,7 @@ Main-session substitution is narrower than replacement. It is allowed only after
 
 The reviewer that raised a material issue should close it when possible. For the same `acceptance_matrix_id`, use the same reviewer for closure unless it is blocked, unavailable, timed out, polluted, or the acceptance matrix changed.
 
-More than one reviewer for the same acceptance matrix needs a recorded reason or budget-expansion packet. If the original reviewer cannot rerun, the final note must name the substitute validation or review evidence.
+One intermediate risk reviewer plus the mandatory final reviewer is allowed with recorded distinct purposes; the child budget still requires expansion where needed. Additional reviewers require a recorded reason or expansion packet. If the original reviewer cannot rerun, the final note must name the substitute validation or review evidence.
 
 ## Explorer Fanout Cap
 
@@ -265,7 +265,7 @@ Rules:
 - The planner defines milestones before implementation.
 - Each milestone uses `templates/t4-milestone-packet.md`.
 - Default milestone implementation uses `worker_frontier`.
-- Low-risk mechanical batch subtasks may use `batch_worker` only after Luna availability is confirmed and the fallback is recorded.
+- Only a separately scored T0/T1 trivial deterministic subtask under a T4 parent may use Luna medium with explicit eligibility evidence and availability; never use Luna for an entire T4 milestone. The parent retains its frontier writer, milestone review and Astra high final review; every subtask also retains mandatory Astra high boundary roles.
 - Each milestone gets focused validation and `reviewer_frontier`.
 - The final merged state gets a cross-milestone pass from `reviewer_final`.
 
@@ -322,4 +322,4 @@ See `references/model-selection-evidence-2026-09.md` for historical benchmark ev
 
 Compare registered effective model/effort against controls before invocation. Stale or missing registrations require a default child with explicit mapped model/effort, bounded fork/context, full role instructions, ownership and acceptance criteria. Verify exact model/effort availability. Record actual read-only enforcement as sandbox or prompt_only; prompt-only is not hard isolation. Return route_blocked if required isolation is unavailable. Preserve independent roles, single writer and validation before review.
 
-GPT-6 Luna explorer/worker_standard require availability and task-suitability checks. Pinned GPT-5.6 Terra fallback profiles remain for a recorded Luna outage; because fallback changes the cost/capability balance, state the reason before use. Batch considers worker_standard then its pinned fallback. Record reason and selected fallback before invocation; no hidden rerouting. Capacity cannot automatically raise Astra effort. Astra high requires documented medium reasoning inadequacy; Astra xhigh/max/ultra require explicit user request and runtime support. Only reasoning_specialist requires the exceptional gate; ordinary approved Astra low/medium roles do not.
+Luna medium requires trivial deterministic execution evidence and availability. If unsuitable or unavailable, use Sol low or above with recorded reason. Historical Terra fallback files are inactive; no automatic Terra route. Planning/final review preserve Astra high and return route_blocked if unavailable. Implementation/specialist Astra high requires documented medium inadequacy; xhigh/max/ultra requires explicit request plus runtime support. Only reasoning_specialist requires its exceptional gate.

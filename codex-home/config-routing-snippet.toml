@@ -1,5 +1,5 @@
 # Routing root defaults only. Merge these keys; do not replace a full config.toml.
 # In an existing [agents] table, use max_concurrent_threads_per_session = 6.
 # max_threads is its legacy alias; never configure both names together.
-model = "gpt-6-luna"
-model_reasoning_effort = "medium"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "low"

@@ -1,6 +1,6 @@
 # Model routing evidence: GPT-5.4 through GPT-6
 
-Reviewed 2026-10-03. This is a routing aid, not a universal ranking. Public API token rates do not describe Codex subscription credit consumption.
+Historical benchmark/context snapshot reviewed 2026-10-03; model lanes and proposed defaults below are historical, superseded by the 2026-10-07 controls. This is a routing aid, not a universal ranking. Public API token rates do not describe Codex subscription credit consumption.
 
 ## Evidence and limits
 
