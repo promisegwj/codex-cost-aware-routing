@@ -173,7 +173,7 @@ Only reasoning_specialist requires this gate; approved routine Astra low/medium 
 - reviewer stickiness applied: yes/no
 - reviewer role: reviewer_risk / reviewer_final / transition-only legacy / none
 - new reviewer spawn_reason:
-- max reviewers per acceptance_matrix_id without expansion: 1
+- max reviewers per acceptance_matrix_id without expansion: 2
 - reviewer findings:
 - severity:
 - rework decision:
@@ -226,9 +226,11 @@ Only reasoning_specialist requires this gate; approved routine Astra low/medium 
 - expected vs registered actual mapping / explicit override:
 - failure class / identified cause / failure packet:
 - prior profile -> selected profile / transition reason:
-- automatic transitions used (maximum 2):
-- total writer attempts used for this acceptance matrix (maximum 3):
-- same-profile attempt / reviewer rework budgets:
+- automatic transitions observed (unlimited; evidence required):
+- total writer attempts observed for this acceptance matrix (unlimited):
+- same-profile attempts / rework / review rounds observed (unlimited):
+- persistent-failure diagnosis / changed approach / scope-risk re-score:
+- real blocking condition, if any:
 - selector status / runtime availability evidence:
 - advice distinguished from actual dispatch:
 

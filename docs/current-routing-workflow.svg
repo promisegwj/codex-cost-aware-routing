@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1900" viewBox="0 0 1600 1900" role="img" aria-labelledby="title desc">
-  <title id="title">Codex Cost-Aware Semantic Routing Workflow</title>
-  <desc id="desc">Economic Luna/Astra role mapping and a separately gated bounded reasoning specialist.</desc>
+  <title id="title">Codex Routing Historical Structure Illustration</title>
+  <desc id="desc">Historical structure illustration; current model mappings and mandatory boundaries are authoritative in routing-controls.toml.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#f8fbff"/>
@@ -42,12 +42,12 @@
 
   <rect width="1600" height="1900" fill="url(#bg)"/>
 
-  <text x="64" y="66" class="title">Codex 成本感知语义路由工作流</text>
-  <text x="64" y="102" class="subtitle">常规角色按用户经验表选用 Luna / Astra；reasoning_specialist 保留独立只读 gate。</text>
+  <text x="64" y="66" class="title">Codex 路由历史结构示意</text>
+  <text x="64" y="102" class="subtitle">本图保留历史角色映射；现行模型、边界与风险规则以 routing-controls.toml 为准。</text>
   <text x="64" y="130" class="small">模型映射集中在 routing-controls.toml；旧 5.4/5.5 角色文件只作为 transition-only compatibility。</text>
 
   <rect x="1016" y="42" width="520" height="112" rx="16" fill="#ecfdf5" stroke="#22c55e" stroke-width="2"/>
-  <text x="1042" y="76" class="cardTitle" fill="#15803d">当前根默认</text>
+  <text x="1042" y="76" class="cardTitle" fill="#15803d">历史根默认</text>
   <text x="1042" y="104" class="line">root_direct：gpt-5.6-sol / medium</text>
   <text x="1042" y="128" class="line">根默认不变；常规 Astra low / medium 已启用</text>
 
@@ -151,7 +151,7 @@
   <text x="92" y="950" class="line">T2：compact evidence 必填：决策、子代 id 如有、模型来源、验证、frontier capability 是否触发。</text>
   <text x="92" y="980" class="line">T3/T4：完整 route ledger；Execution Context Discovery；缺工具/模型则 route_blocked。</text>
   <text x="770" y="920" class="line">Reviewer 只看目标、验收标准、diff、验证结果和必要关键文件。</text>
-  <text x="770" y="950" class="line">评审发现高严重问题：同一 worker 窄返工一次；扩大则 Failure Packet。</text>
+  <text x="770" y="950" class="line">评审问题：同一 worker 持续修复复核；次数不限，范围风险变化重评。</text>
   <text x="770" y="980" class="line">Reviewer Stickiness：同一 acceptance matrix 尽量由同一 reviewer 闭环。</text>
   <rect x="92" y="1022" width="610" height="44" rx="10" fill="#ffffff" stroke="#ddd6fe"/>
   <text x="112" y="1049" class="pill">transition-only 旧角色文件保留兼容，但不进入新 active defaults</text>

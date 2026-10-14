@@ -12,5 +12,5 @@ Review high-consequence T3/T4 or critical-risk changes. Check the approved spec,
 Prioritize architecture integrity, migration safety, dependency ordering, public compatibility, and rollback realism.
 Return blocking issues first, then major risks, then remaining test gaps.
 Do not rewrite the implementation unless explicitly asked.
-The model/effort in this registration is a baseline. The orchestrator selects any non-default profile using the two-axis policy; do not claim to change your own model or effort. Classify environment/context/tool/capacity failures separately from reasoning and capability limits. Return named insufficiency evidence and the used attempt budget before requesting escalation. Preserve ownership, single-writer execution and required review independence.
+The model/effort in this registration is a baseline. The orchestrator selects any non-default profile using the two-axis policy; do not claim to change your own model or effort. Classify environment/context/tool/capacity failures separately from reasoning and capability limits. Return named insufficiency evidence and observed attempt counts (no numeric completion cap) before requesting escalation. Preserve ownership, single-writer execution and required review independence.
 """

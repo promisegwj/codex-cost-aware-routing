@@ -1,4 +1,4 @@
-"""Regression scenarios for capability, effort, governance and stop boundaries."""
+"""Regression scenarios for capability, effort, governance and continuation boundaries."""
 import unittest
 from select_route import load_policy, select, check_policy, DEFAULT_CONTROLS
 
@@ -31,11 +31,11 @@ class RouteScenarios(unittest.TestCase):
             ("ordinary_defect", {"tier": "T2", "failure": "validation_defect", "previous_profile": "sol_medium", "evidence": "Known off-by-one in index"}, "sol_medium", "T2", "repair_first"),
             ("missing_failure_evidence", {"tier": "T2", "failure": "effort_limit", "previous_profile": "sol_medium"}, "sol_low", "T2", "needs_evidence"),
             ("missing_actual_profile", {"tier": "T2", "failure": "effort_limit", "evidence": "Missed constraint"}, "sol_low", "T2", "needs_evidence"),
-            ("transition_budget", {"tier": "T2", "failure": "effort_limit", "previous_profile": "sol_high", "evidence": "Named insufficiency", "transitions_used": 2}, "sol_high", "T2", "budget_exhausted"),
-            ("writer_budget", {"tier": "T2", "writer_attempts_used": 3}, "sol_low", "T2", "budget_exhausted"),
-            ("astra_stop", {"tier": "T3", "failure": "capability_limit", "previous_profile": "astra_medium", "evidence": "Assigned model cannot resolve coupled proof"}, "astra_medium", "T3", "stop"),
+            ("transition_past_old_limit", {"tier": "T2", "failure": "effort_limit", "previous_profile": "sol_high", "evidence": "Named insufficiency", "transitions_used": 2}, "astra_medium", "T2", "advice_only"),
+            ("writer_past_old_limit", {"tier": "T2", "writer_attempts_used": 3}, "sol_low", "T2", "advice_only"),
+            ("astra_stop", {"tier": "T3", "failure": "capability_limit", "previous_profile": "astra_medium", "evidence": "Assigned model cannot resolve coupled proof"}, "astra_medium", "T3", "replan_required"),
             ("astra_effort", {"tier": "T3", "failure": "effort_limit", "previous_profile": "astra_medium", "evidence": "Medium missed a demonstrated constraint"}, "astra_high", "T3", "advice_only"),
-            ("batch_scope", {"role": "batch", "trivial_execution": True, "execution_evidence": "Exact substitutions supplied", "failure": "capability_limit", "previous_profile": "luna_medium", "evidence": "Work is no longer mechanical"}, "luna_medium", "T1", "stop"),
+            ("batch_scope", {"role": "batch", "trivial_execution": True, "execution_evidence": "Exact substitutions supplied", "failure": "capability_limit", "previous_profile": "luna_medium", "evidence": "Work is no longer mechanical"}, "luna_medium", "T1", "replan_required"),
         ]
         for name, task, profile, tier, status in cases:
             with self.subTest(name=name):
@@ -64,7 +64,7 @@ class RouteScenarios(unittest.TestCase):
                             self.assertEqual(result["profile"], "astra_high")
                 stopped = select({"tier": tier, "role": role, "failure": "effort_limit",
                                   "previous_profile": "astra_high", "evidence": "High missed proof"}, self.policy)
-                self.assertEqual(stopped["status"], "stop")
+                self.assertEqual(stopped["status"], "replan_required")
 
     def test_luna_requires_explicit_deterministic_execution_evidence(self):
         eligible = {"tier": "T0", "trivial_execution": True,
@@ -100,11 +100,37 @@ class RouteScenarios(unittest.TestCase):
             with self.subTest(task=task), self.assertRaises(ValueError):
                 select(task, self.policy)
 
-    def test_confidence_and_budget_accounting(self):
+    def test_confidence_and_observational_counts(self):
         result = select({"tier": "T2", "high_confidence": True, "transitions_used": 1, "writer_attempts_used": 2}, self.policy)
         self.assertTrue(result["review_required"])
-        self.assertEqual(result["remaining_automatic_transitions"], 1)
-        self.assertEqual(result["remaining_writer_attempts"], 1)
+        self.assertIsNone(result["remaining_automatic_transitions"])
+        self.assertIsNone(result["remaining_writer_attempts"])
+        self.assertEqual(result["attempt_limit_policy"], "unlimited_counts_evidence_required")
+        self.assertEqual((result["transitions_used"], result["writer_attempts_used"]), (1, 2))
+
+
+    def test_counts_never_block_completion_or_bypass_risk_gates(self):
+        scenarios = [
+            ({"tier": "T2", "complexity": "integrated"}, "sol_medium", "advice_only"),
+            ({"failure": "effort_limit", "previous_profile": "sol_high", "evidence": "Named missed derivation"}, "astra_medium", "advice_only"),
+            ({"failure": "validation_defect", "previous_profile": "sol_medium", "evidence": "Known wrong index"}, "sol_medium", "repair_first"),
+            ({"failure": "effort_limit", "previous_profile": "sol_medium"}, "sol_low", "needs_evidence"),
+            ({"critical_risk": True, "failure": "environment", "previous_profile": "sol_low", "evidence": "Tool not launched"}, "astra_low", "repair_first"),
+            ({"tier": "T3", "failure": "effort_limit", "previous_profile": "astra_high", "evidence": "High missed proof"}, "astra_high", "replan_required"),
+            ({"tier": "T3", "failure": "capability_limit", "previous_profile": "astra_medium", "evidence": "Assigned model could not solve proof"}, "astra_medium", "replan_required"),
+            ({"role": "planner"}, "astra_high", "advice_only"),
+            ({"role": "final"}, "astra_high", "advice_only"),
+        ]
+        for count in (3, 4, 100, 10**30):
+            for task, profile, status in scenarios:
+                with self.subTest(count=count, task=task):
+                    result = select({**task, "writer_attempts_used": count, "transitions_used": count}, self.policy)
+                    self.assertEqual((result["profile"], result["status"]), (profile, status))
+                    self.assertIsNone(result["remaining_writer_attempts"])
+                    self.assertIsNone(result["remaining_automatic_transitions"])
+                    self.assertEqual(result["writer_attempts_used"], count)
+                    self.assertFalse(result["route_executed"])
+                    self.assertEqual(result["specialist_gate"], "not_evaluated_not_authorized")
 
 
 if __name__ == "__main__":

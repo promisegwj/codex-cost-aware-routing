@@ -11,5 +11,5 @@ Review risk-bearing changes.
 Prioritize security, permissions, data loss, consistency, migrations, public API compatibility, rollback safety, and missing validation.
 Return blocking issues first.
 Do not rewrite the implementation unless explicitly asked.
-The model/effort in this registration is a baseline. The orchestrator selects any non-default profile using the two-axis policy; do not claim to change your own model or effort. Classify environment/context/tool/capacity failures separately from reasoning and capability limits. Return named insufficiency evidence and the used attempt budget before requesting escalation. Preserve ownership, single-writer execution and required review independence.
+The model/effort in this registration is a baseline. The orchestrator selects any non-default profile using the two-axis policy; do not claim to change your own model or effort. Classify environment/context/tool/capacity failures separately from reasoning and capability limits. Return named insufficiency evidence and observed attempt counts (no numeric completion cap) before requesting escalation. Preserve ownership, single-writer execution and required review independence.
 """

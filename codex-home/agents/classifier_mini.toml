@@ -12,6 +12,6 @@ Do not solve the task.
 Transition-only: do not place this role in new active tier defaults.
 Use deterministic risk cues first and only read the minimum context needed.
 Return compact JSON only with:
-task_type, risk_score, tier, path, need_scout, need_planner, reviewer, max_worker_attempts, escalation, reason.
+task_type, risk_score, tier, path, need_scout, need_planner, reviewer, attempt_counts_observed, escalation, reason.
 Keep the answer under 220 tokens.
 """

@@ -115,21 +115,19 @@ def select(task, policy):
             reasons.append("No reasoning escalation for context, instruction, tool, environment or a diagnosed ordinary defect")
         elif previous is None:
             status, action = "needs_evidence", "record_actual_previous_profile"
-        elif task.get("transitions_used", 0) >= adaptation["max_automatic_transitions"] or (role == "worker" and task.get("writer_attempts_used", 0) >= adaptation["max_total_writer_attempts_per_acceptance"]):
-            profile = previous
-            status, action = "budget_exhausted", "preserve_progress_and_return_failure_packet"
         elif role == "batch":
             profile = previous
-            status, action = "stop", "reclassify_batch_scope_before_nonmechanical_work"
+            status, action = "replan_required", "reclassify_batch_scope_before_nonmechanical_work"
         else:
             if failure == "effort_limit":
-                next_profile = adaptation.get(previous + "_effort_next", "stop_and_handoff")
+                next_profile = adaptation.get(previous + "_effort_next", "diagnose_and_replan")
             else:
                 family = previous.split("_", 1)[0]
                 next_profile = adaptation[family + "_capability_next"]
             if next_profile not in profiles:
                 profile = previous
-                status, action = "stop", next_profile
+                status, action = "replan_required", next_profile
+                reasons.append("Diagnose and change the approach before retrying; preserve model/effort floors and specialist gate")
             else:
                 profile = next_profile
                 reasons.append(f"Evidence-backed {failure}: {previous} -> {profile}")
@@ -161,8 +159,6 @@ def select(task, policy):
     chosen = profiles[profile]
     registered = policy["model_roles"].get(semantic, policy["root_default"])
     matches = all(chosen[key] == registered[key] for key in ("model", "model_reasoning_effort"))
-    if role in ("worker", "batch") and task.get("writer_attempts_used", 0) >= adaptation["max_total_writer_attempts_per_acceptance"] and status not in ("needs_evidence", "budget_exhausted", "stop"):
-        status, action = "budget_exhausted", "preserve_progress_and_return_failure_packet"
     if task.get("high_confidence", False):
         reasons.append("High confidence strengthens acceptance/validation/review; no automatic model promotion")
     if not reasons:
@@ -174,8 +170,11 @@ def select(task, policy):
             "boundary_roles": ["planner_frontier", "reviewer_final"],
             "luna_eligible": bool(luna_eligible),
             "review_required": role in ("worker", "batch"),
-            "remaining_automatic_transitions": max(0, adaptation["max_automatic_transitions"] - task.get("transitions_used", 0)),
-            "remaining_writer_attempts": max(0, adaptation["max_total_writer_attempts_per_acceptance"] - task.get("writer_attempts_used", 0)),
+            "remaining_automatic_transitions": None,
+            "remaining_writer_attempts": None,
+            "attempt_limit_policy": "unlimited_counts_evidence_required",
+            "transitions_used": task.get("transitions_used", 0),
+            "writer_attempts_used": task.get("writer_attempts_used", 0),
             "specialist_gate": "not_evaluated_not_authorized",
             "invocation": "actual_root_profile_check" if semantic == "root_direct" else ("registered_role_after_actual_mapping_check" if matches else "default_child_explicit_model_effort_and_full_role_instructions"),
             "availability": "unverified", "route_executed": False}

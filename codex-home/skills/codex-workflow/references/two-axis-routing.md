@@ -1,6 +1,6 @@
-# Model and effort selection — 2026-10-07
+# Model and effort selection — 2026-10-15
 
-Authority: routing-controls.toml, policy 2026-10-07-sol-default-astra-high-boundaries-v2.
+Authority: routing-controls.toml, policy 2026-10-15-completion-without-attempt-caps-v3.
 Policy heuristics are not measured quality guarantees. Tier, model and effort remain separate.
 
 ## Resolve routing configuration paths first
@@ -29,9 +29,9 @@ Planner, writer and final reviewer stay distinct; root may implement T0/T1. Defa
 
 Context, instructions, tool, environment, capacity and diagnosed ordinary defects require cause repair or recorded safe fallback without automatic reasoning escalation. No automatic Terra fallback; retained Terra files are historical inactive profiles. Luna outage/unsuitability goes to Sol low or above. Boundary capacity retains Astra high or stops.
 
-Effort transitions: Sol low → medium → high → Astra medium; Astra implementation low → medium → high → stop, with evidence. Luna reasoning insufficiency means its trivial lane is exceeded: reclassify to Sol medium. Capability transitions: Luna → Sol medium; Sol → Astra medium; Astra → stop or evaluate separate specialist gate. Final boundary floor is reapplied after every initial override, failure, repair, previous-profile restoration or stop path; boundary Astra high effort failure stops with handoff rather than automatic xhigh.
+Effort transitions: Sol low → medium → high → Astra medium; Astra implementation low → medium → high → diagnose and replan, with evidence. Luna reasoning insufficiency means its trivial lane is exceeded: reclassify to Sol medium. Capability transitions: Luna → Sol medium; Sol → Astra medium; Astra → diagnose/replan or evaluate separate specialist gate. Final boundary floor is reapplied after every initial override, failure, repair, previous-profile restoration or stop path; boundary Astra high effort failure requires diagnosis and replan while retaining the high floor; no automatic xhigh.
 
-Allow at most two automatic transitions and three total writer attempts per acceptance matrix, including ordinary repairs. One initial attempt per profile and at most one narrow reviewer rework pass. Preserve single writer and record replacement evidence. Budget exhaustion stops new work with a failure packet. xhigh/max/ultra requires explicit request and runtime support. Specialist remains bounded, read-only and separately gated; boundary high never opens that gate.
+Writer attempts, rework, review rounds and automatic profile transitions have no numeric cap. Preserve single writer and record replacement evidence. Counts are observational; continue evidence-backed repair and independent review until acceptance. Persistent failure requires diagnosis and a changed approach, not blind repetition. Re-score scope/risk changes. At the automatic ceiling, replan; only a real blocker (missing required capability/isolation or no feasible authorized approach) stops work with a packet. xhigh/max/ultra requires explicit request and runtime support. Specialist remains bounded, read-only and separately gated; boundary high never opens that gate.
 
 ## Read-only selector
 
@@ -48,9 +48,9 @@ scripts/select_route.py reads evidence-backed JSON and returns advice only; it d
 | evidence | Named reasoning/capability evidence or failure diagnosis |
 | failure | none/context/instructions/tool/environment/capacity/validation_defect/effort_limit/capability_limit |
 | previous_profile | Actual profile; only with failure |
-| transitions_used/writer_attempts_used | Nonnegative counts across the acceptance matrix |
+| transitions_used/writer_attempts_used | Nonnegative observational counts across the acceptance matrix; no limit |
 
-Unknown fields, string booleans, invalid tiers and extreme-effort requests are rejected. Stop/needs_evidence/budget_exhausted prohibit dispatch; repair_first requires repair/fallback first. Advice always includes route_executed=false, availability=unverified and specialist_gate=not_evaluated_not_authorized.
+Unknown fields, string booleans, invalid tiers and extreme-effort requests are rejected. needs_evidence prohibits dispatch until the packet is complete; repair_first requires repair/fallback first; replan_required requires diagnosis and a changed feasible approach before retrying, without automatic extreme effort or an ungated specialist. Counts never emit budget_exhausted. remaining_automatic_transitions and remaining_writer_attempts are null with attempt_limit_policy=unlimited_counts_evidence_required, not zero remaining. Advice always includes route_executed=false, availability=unverified and specialist_gate=not_evaluated_not_authorized.
 
 ```powershell
 $routePython = Join-Path $env:USERPROFILE '.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'

@@ -12,5 +12,5 @@ Transition-only: do not place this role in new active tier defaults.
 Avoid unrelated refactors and formatting-only changes.
 Run the most relevant validation command when the workflow calls for validation.
 Return changed files, validation result, and remaining risks only.
-Escalate instead of repeatedly guessing after one failed attempt.
+Diagnose failed attempts and use evidence-backed repair or escalation instead of repeatedly guessing; counts alone never stop completion.
 """
